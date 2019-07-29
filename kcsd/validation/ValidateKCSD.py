@@ -1,5 +1,6 @@
-"""
-@author: mkowalska
+"""These are Validate KCSD classes written for the benefit of testing
+true csd
+
 """
 
 from __future__ import print_function
@@ -8,8 +9,6 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import time
-
-from builtins import int, range
 
 import numpy as np
 from numpy.linalg import LinAlgError
@@ -76,14 +75,11 @@ class ValidateKCSD(object):
                 Resolution of ground truth.
                 Default: 100.
 
-        Returns
-        -------
-        None
-
         Raises
         ------
         ValueError
             If dimension of estimation space differs from 1, 2 or 3.
+
         """
         if dim != 1 and dim != 2 and dim != 3:
             raise ValueError('Wrong dimension. Choose 1, 2 or 3.')
@@ -99,14 +95,11 @@ class ValidateKCSD(object):
         **kwargs
             Same as those passed to initialize the Class.
 
-        Returns
-        -------
-        None
-
         Raises
         ------
         TypeError
             If invalid keyword arguments inserted into **kwargs.
+
         """
         self.src_type = kwargs.pop('src_type', 'gauss')
         self.sigma = kwargs.pop('sigma', 0.3)
@@ -157,6 +150,7 @@ class ValidateKCSD(object):
             Positions (coordinates) at which CSD is generated.
         true_csd: numpy array
             CSD at csd_at positions.
+
         """
         if self.dim == 1:
             if csd_at is None:
@@ -214,6 +208,7 @@ class ValidateKCSD(object):
         ValueError
             If number of broken electrodes is bigger or equal to the total
             number of electrodes or is negative.
+
         """
         if n >= total_ele:
             raise ValueError('Number of broken electrodes bigger than total'
@@ -254,6 +249,7 @@ class ValidateKCSD(object):
         -------
         ele_pos: numpy array
             Linearly placed electrodes positions.
+
         """
         if self.dim == 1:
             if ele_lims is None:
@@ -278,19 +274,19 @@ class ValidateKCSD(object):
             if ele_lims is None:
                 ele_x, ele_y, ele_z = np.mgrid[
                     self.ele_lims[0]:self.ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3))),
+                    np.complex(0, int(round((total_ele)**(1./3), 1))),
                     self.ele_lims[0]:self.ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3))),
+                    np.complex(0, int(round((total_ele)**(1./3), 1))),
                     self.ele_lims[0]:self.ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3)))]
+                    np.complex(0, int(round((total_ele)**(1./3), 1)))]
             else:
                 ele_x, ele_y, ele_z = np.mgrid[
                     ele_lims[0]:ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3))),
+                    np.complex(0, int(round((total_ele)**(1./3), 1))),
                     ele_lims[0]:ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3))),
+                    np.complex(0, int(round((total_ele)**(1./3), 1))),
                     ele_lims[0]:ele_lims[1]:
-                    np.complex(0, int((total_ele)**(1./3)))]
+                    np.complex(0, int(round((total_ele)**(1./3), 1)))]
             ele_pos = np.vstack((ele_x.flatten(), ele_y.flatten(),
                                  ele_z.flatten())).T
         if nr_broken_ele is not None:
@@ -316,10 +312,10 @@ class ValidateKCSD(object):
         ele_lims: list
             Electrodes limits.
             Default: None.
-        h : float
+        h: float
             Thickness of analyzed cylindrical slice.
-        sigma : float
-                Space conductance of the medium.
+        sigma: float
+            Space conductance of the medium.
         noise: float
             Determines the level of noise in the data.
             Default: 0.
@@ -336,6 +332,7 @@ class ValidateKCSD(object):
             Electrodes locations in 1D, 2D or 3D.
         pots: numpy array
             Potentials measured (calculated) on electrodes.
+
         """
         csd_at, true_csd = self.generate_csd(csd_profile, csd_seed)
         ele_pos = self.generate_electrodes(total_ele, ele_lims,
@@ -359,15 +356,16 @@ class ValidateKCSD(object):
             Positions (coordinates) at which CSD is generated.
         ele_pos: numpy array
             Locations of electrodes.
-        h : float
+        h: float
             Thickness of analyzed cylindrical slice.
-        sigma : float
-                Space conductance of the medium.
+        sigma: float
+            Space conductance of the medium.
 
         Returns
         -------
         pots: numpy array
             Normalized values of potentials as in eq.:26 Potworowski(2012).
+
         """
         if self.dim == 1:
             pots = np.zeros(len(ele_pos))
@@ -415,13 +413,14 @@ class ValidateKCSD(object):
             Coordinates of ground truth data.
         ele_pos: numpy array
             Locations of electrodes.
-        h : float
+        h: float
             Thickness of analyzed cylindrical slice.
 
         Returns
         -------
         pots: numpy array
             Calculated potentials.
+
         """
         xlin = csd_at[0, :, 0, 0]
         ylin = csd_at[1, 0, :, 0]
@@ -448,7 +447,7 @@ class ValidateKCSD(object):
             Values of csd (ground truth) at csd_at positions.
         ele_loc: float (1D) or list (2D and 3D)
             Single electrode location/position.
-        h : float
+        h: float
             Thickness of analyzed cylindrical slice.
         csd_lims: list
             Limits of true source space
@@ -457,6 +456,7 @@ class ValidateKCSD(object):
         -------
         Integral: float
             Calculated potential at x0 position.
+
         """
         if self.dim == 1:
             m = np.sqrt((csd_at - ele_loc)**2 + h**2) - abs(csd_at - ele_loc)
@@ -507,9 +507,9 @@ class ValidateKCSD(object):
         -------
         rms: float
             Normalized error of reconstruction.
+
         """
-        rms = np.linalg.norm((true_csd/np.max(abs(true_csd)) -
-                              est_csd/np.max(abs(est_csd))))
+        rms = np.linalg.norm((true_csd - est_csd))/(np.linalg.norm(true_csd))
         return rms
 
     def calculate_point_error(self, true_csd, est_csd):
@@ -529,13 +529,15 @@ class ValidateKCSD(object):
         point_error: numpy array
             Normalized error of reconstruction calculated separetly at every
             point of estimation space.
+
         """
-        point_error = np.linalg.norm(true_csd.reshape(true_csd.size, 1) /
-                                     np.max(abs(true_csd)) -
-                                     est_csd.reshape(est_csd.size, 1) /
-                                     np.max(abs(true_csd)), axis=1)
-        if self.dim != 1:
-            point_error = point_error.reshape(true_csd.shape)
+        true_csd_r = true_csd.reshape(true_csd.size, 1)
+        est_csd_r = est_csd.reshape(est_csd.size, 1)
+        epsilon = np.linalg.norm(true_csd_r)/np.max(abs(true_csd_r))
+        err_r = abs(est_csd_r/(np.linalg.norm(est_csd_r)) -
+                  true_csd_r/(np.linalg.norm(true_csd_r)))
+        err_r *= epsilon
+        point_error = err_r.reshape(true_csd.shape)
         return point_error
 
     def calculate_rdm(self, true_csd, est_csd):
@@ -554,6 +556,7 @@ class ValidateKCSD(object):
         -------
         rdm: float
             Relative difference measure.
+
         """
         epsilon = np.finfo(np.float64).eps
         rdm = np.linalg.norm(est_csd/(np.linalg.norm(est_csd) + epsilon) -
@@ -576,6 +579,7 @@ class ValidateKCSD(object):
         -------
         mag: float
             Magnitude ratio.
+
         """
         epsilon = np.finfo(np.float64).eps
         mag = np.linalg.norm(est_csd/(true_csd + epsilon))
@@ -597,6 +601,7 @@ class ValidateKCSD(object):
             Sigmoidal mean error of reconstruction.
             error_mean -> 1    - very poor reconstruction
             error_mean -> 0    - perfect reconstruction
+
         '''
         sig_error = 2*(1./(1 + np.exp((-error))) - 1/2.)
         error_mean = np.mean(sig_error, axis=0)
@@ -621,6 +626,7 @@ class ValidateKCSD(object):
         -------
         pots_noise: numpy array
             Potentials with added random Gaussian noise.
+
         """
         rstate = np.random.RandomState(seed)
         noise = 0.01*level*rstate.normal(np.mean(pots), np.std(pots),
@@ -643,6 +649,7 @@ class ValidateKCSD(object):
         xi
         yi
         zi
+
         """
         x = x.flatten()
         y = y.flatten()
@@ -671,6 +678,7 @@ class ValidateKCSD1D(ValidateKCSD):
         Returns
         -------
         None
+
         """
         super(ValidateKCSD1D, self).__init__(dim=1, **kwargs)
         self.csd_seed = csd_seed
@@ -702,6 +710,7 @@ class ValidateKCSD1D(ValidateKCSD):
             Instance of class KCSD1D.
         est_csd: numpy array
             Estimated csd (with kCSD method).
+
         """
         pots = pots.reshape((len(ele_pos), 1))
         k = KCSD1D(ele_pos, pots, src_type=self.src_type, sigma=self.sigma,
@@ -716,7 +725,6 @@ class ValidateKCSD1D(ValidateKCSD):
             raise ValueError('Invalid value of reconstruction method,'
                              'pass either cross-validation or L-curve')
         est_csd = k.values('CSD')
-        print('here')
         return k, est_csd
 
     def make_reconstruction(self, csd_profile, csd_seed, total_ele,
@@ -761,6 +769,7 @@ class ValidateKCSD1D(ValidateKCSD):
         point_error: numpy array
             Error of reconstruction calculated at every point of reconstruction
             space.
+
         """
         csd_at, true_csd = self.generate_csd(csd_profile, csd_seed)
         ele_pos, pots = self.electrode_config(csd_profile, csd_seed, total_ele,
@@ -799,9 +808,6 @@ class ValidateKCSD1D(ValidateKCSD):
         fig_title: string
             Title of the plot.
 
-        Returns
-        -------
-        None
         """
         # CSDs
         fig = plt.figure(figsize=(12, 10))
@@ -843,9 +849,6 @@ class ValidateKCSD2D(ValidateKCSD):
         **kwargs
             Configuration parameters.
 
-        Returns
-        -------
-        None
         """
         super(ValidateKCSD2D, self).__init__(dim=2, **kwargs)
         self.csd_seed = csd_seed
@@ -877,6 +880,7 @@ class ValidateKCSD2D(ValidateKCSD):
             Instance of class KCSD1D.
         est_csd: numpy array
             Estimated csd (with kCSD method).
+
         """
         pots = pots.reshape((len(ele_pos), 1))
         k = KCSD2D(ele_pos, pots, h=self.h, sigma=self.sigma,
@@ -939,6 +943,7 @@ class ValidateKCSD2D(ValidateKCSD):
         point_error: numpy array
             Error of reconstruction calculated at every point of reconstruction
             space.
+
         """
         csd_at, true_csd = self.generate_csd(csd_profile, csd_seed)
         ele_pos, pots = self.electrode_config(csd_profile, csd_seed, total_ele,
@@ -952,9 +957,9 @@ class ValidateKCSD2D(ValidateKCSD):
                 % (k.lambd, k.R, rms, k.cv_error)
         self.make_plot(csd_at, true_csd, test_csd, k, est_csd, ele_pos,
                        pots, title)
-        ss = SpectralStructure(k)
-        ss.picard_plot(pots)
+        SpectralStructure(k)
         point_error = self.calculate_point_error(test_csd, est_csd[:, :, 0])
+        print(k.n_src)
         return k, rms, point_error
 
     def make_plot(self, csd_at, true_csd, test_csd, kcsd, est_csd, ele_pos,
@@ -979,18 +984,15 @@ class ValidateKCSD2D(ValidateKCSD):
         fig_title: string
             Title of the plot.
 
-        Returns
-        -------
-        None
         """
+        print(pots.shape)
         csd_x = csd_at[0]
         csd_y = csd_at[1]
         fig = plt.figure(figsize=(15, 7))
-        fig.suptitle(fig_title)
+#        fig.suptitle(fig_title)
         ax1 = plt.subplot(141, aspect='equal')
         t_max = np.max(np.abs(true_csd))
         levels = np.linspace(-1 * t_max, t_max, 16)
-        print(csd_x.shape, csd_y.shape, true_csd.shape)
         im1 = ax1.contourf(csd_x, csd_y, true_csd, levels=levels,
                            cmap=cm.bwr)
         ax1.set_xlabel('x [mm]')
@@ -1056,6 +1058,7 @@ class ValidateMoIKCSD(ValidateKCSD):
     """
     ValidateMoIKCSD - The 2D variant of validation class for kCSD method
     (CSD while including the forward modeling effects of saline).
+
     """
     def __init__(self, csd_seed, **kwargs):
         """
@@ -1068,9 +1071,6 @@ class ValidateMoIKCSD(ValidateKCSD):
         **kwargs
             Configuration parameters.
 
-        Returns
-        -------
-        None
         """
         super(ValidateMoIKCSD, self).__init__(dim=2)
 
@@ -1101,6 +1101,7 @@ class ValidateMoIKCSD(ValidateKCSD):
             Instance of class KCSD1D.
         est_csd: numpy array
             Estimated csd (with kCSD method).
+
         """
         pots = pots.reshape((len(ele_pos), 1))
         k = MoIKCSD(ele_pos, pots, **params)
@@ -1130,9 +1131,6 @@ class ValidateKCSD3D(ValidateKCSD):
         **kwargs
             Configuration parameters.
 
-        Returns
-        -------
-        None
         """
         super(ValidateKCSD3D, self).__init__(dim=3, **kwargs)
         self.csd_seed = csd_seed
@@ -1164,6 +1162,7 @@ class ValidateKCSD3D(ValidateKCSD):
             Instance of class KCSD1D.
         est_csd: numpy array
             Estimated csd (with kCSD method).
+
         """
         pots = pots.reshape((len(ele_pos), 1))
         k = KCSD3D(ele_pos, pots, h=self.h, sigma=self.sigma,
@@ -1228,6 +1227,7 @@ class ValidateKCSD3D(ValidateKCSD):
         point_error: numpy array
             Error of reconstruction calculated at every point of reconstruction
             space.
+
         """
         csd_at, true_csd = self.generate_csd(csd_profile, csd_seed)
         ele_pos, pots = self.electrode_config(csd_profile, csd_seed, total_ele,
@@ -1271,9 +1271,6 @@ class ValidateKCSD3D(ValidateKCSD):
         fig_title: string
             Title of the plot.
 
-        Returns
-        -------
-        None
         """
         fig = plt.figure(figsize=(10, 16))
         z_steps = 5
@@ -1371,9 +1368,6 @@ class SpectralStructure(object):
             Instance of ValidationClassKCSD1D, ValidationClassKCSD2D or
             ValidationClassKCSD3D class.
 
-        Returns
-        -------
-        None
         """
         self.k = k
 
@@ -1382,10 +1376,6 @@ class SpectralStructure(object):
         Method that calculates singular value decomposition of total kernel
         matrix. K~*K^-1  from eq. 18 (Potworowski 2012). It calls also plotting
         methods.
-
-        Parameters
-        ----------
-        None
 
         Returns
         -------
@@ -1401,6 +1391,7 @@ class SpectralStructure(object):
         LinAlgError
             If the matrix is not numerically invertible.
             If SVD computation does not converge.
+
         """
         try:
             kernel = np.dot(self.k.k_interp_cross,
@@ -1426,14 +1417,11 @@ class SpectralStructure(object):
         b: numpy array
             Right-hand side of the linear equation.
 
-        Returns
-        -------
-        None
-
         Raises
         ------
         LinAlgError
             If SVD computation does not converge.
+
         """
         try:
             u, s, v = np.linalg.svd(self.k.k_pot + self.k.lambd *
@@ -1481,9 +1469,6 @@ class SpectralStructure(object):
         s: numpy array
             Eigenvalues of k_pot matrix.
 
-        Returns
-        -------
-        None
         """
         plt.figure()
         plt.plot(s, '.')
@@ -1504,9 +1489,6 @@ class SpectralStructure(object):
         sigma: numpy array
             Singular values of kernels product.
 
-        Returns
-        -------
-        None
         """
         x = np.arange(1, len(s) + 1)
         plt.figure()
@@ -1529,10 +1511,6 @@ class SpectralStructure(object):
         Method that calculates eigenvalue decomposition of kernel (k_pot
         matrix).
 
-        Parameters
-        ----------
-        None
-
         Returns
         -------
         eigenvectors: numpy array
@@ -1544,6 +1522,7 @@ class SpectralStructure(object):
         ------
         LinAlgError
             If EVD computation does not converge.
+
         """
         try:
             eigenvalues, eigenvectors = np.linalg.eigh(self.k.k_pot +
@@ -1555,6 +1534,7 @@ class SpectralStructure(object):
                               'slightly')
         idx = eigenvalues.argsort()[::-1]
         eigenvalues = eigenvalues[idx]
+        print(eigenvalues.shape)
         eigenvectors = eigenvectors[:, idx]
 #        self.plot_evd_sigma(eigenvalues)
 #        self.plot_evd_sigma_lambd(eigenvalues)
@@ -1569,9 +1549,6 @@ class SpectralStructure(object):
         sigma: numpy array
             Singular values of kernels product.
 
-        Returns
-        -------
-        None
         """
         plt.figure()
         plt.plot(sigma, 'b.')
@@ -1592,9 +1569,6 @@ class SpectralStructure(object):
         sigma: numpy array
             Singular values of kernels product.
 
-        Returns
-        -------
-        None
         """
         x = np.arange(1, len(sigma) + 1)
         plt.figure()
@@ -1621,9 +1595,6 @@ class SpectralStructure(object):
         v: numpy array
             Eigenvectors.
 
-        Returns
-        -------
-        None
         """
         a = int(v.shape[1] - int(np.sqrt(v.shape[1]))**2)
         if a == 0:
@@ -1648,9 +1619,6 @@ class SpectralStructure(object):
         u_svd: numpy array
             Left singular vectors.
 
-        Returns
-        -------
-        None
         """
         a = int(u_svd.shape[1] - int(np.sqrt(u_svd.shape[1]))**2)
         if a == 0:
@@ -1675,9 +1643,6 @@ class SpectralStructure(object):
         v_svd: numpy array
             Right singular vectors.
 
-        Returns
-        -------
-        None
         """
         a = int(v_svd.shape[1] - int(np.sqrt(v_svd.shape[1]))**2)
         if a == 0:
@@ -1699,9 +1664,9 @@ if __name__ == '__main__':
     CSD_PROFILE = CSD.gauss_1d_mono
     CSD_SEED = 15
     N_SRC_INIT = 100
-    ELE_LIMS = [0.1, 0.9]  # range of electrodes space
+    ELE_LIMS = [0.05, 0.95]  # range of electrodes space
     method = 'cross-validation'
-    Rs = np.arange(0.2, 0.5, 0.1)
+    Rs = np.arange(0.2, 0.3, 0.1)
     lambdas = None
     noise = 0
 
@@ -1713,11 +1678,11 @@ if __name__ == '__main__':
                            Rs=Rs, lambdas=lambdas, method=method)
 
     print('Checking 2D')
-    CSD_PROFILE = CSD.gauss_2d_small
+    CSD_PROFILE = CSD.gauss_2d_large
     CSD_SEED = 5
 
-    KK = ValidateKCSD2D(CSD_SEED, h=50., sigma=1., n_src_init=400)
-    KK.make_reconstruction(CSD_PROFILE, CSD_SEED, total_ele=16, noise=noise,
+    KK = ValidateKCSD2D(CSD_SEED, h=50., sigma=1., n_src_init=4)
+    KK.make_reconstruction(CSD_PROFILE, CSD_SEED, total_ele=100, noise=noise,
                            Rs=Rs, lambdas=lambdas, method=method)
 
     print('Checking 3D')
